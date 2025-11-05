@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Roleta de Brindes Letrinha</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --rosa: #e83e8c;
+        --azul: #4a90e2;
+        --amarelo: #eab52f;
+        --verde: #5bb85d;
+
+        --laranja: #f5a623;
+        --roxo: #9013fe;
+        --vermelho: #d0021b;
+        --azul-claro: #50e3c2;
+        --magenta: #b43e8c;
+        --verde-limao: #7ed321;
+        --rosa-choque: #ff1493;
+        --roxo-claro: #da70d6;
+
+        --preto: #333333;
+        --branco: #ffffff;
+        --fundo: #fffbef;
+
+        --font-family: "Nunito", sans-serif;
+        --wheel-size: min(700px, 80vmin);
+        --border-thick: 15px;
+        --border-shadow: 8px 8px 0px var(--preto);
+
+        /* Altura da tela corrigida para iOS */
+        --vh: 1vh;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent; /* Remove o brilho ao tocar em links/botões */
+      }
+
+      html,
+      body {
+        width: 100%;
+        /* Correção para altura total em mobile browsers */
+        height: calc(var(--vh, 1vh) * 100);
+        overflow: hidden;
+        font-family: var(--font-family);
+        background-color: var(--fundo);
+        color: var(--preto);
+        -webkit-font-smoothing: antialiased;
+        /* Previne seleção de texto e menu de contexto em toques longos */
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .modal-overlay,
+      .view-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+
+      body.view-cadastro #modal-cadastro {
+        display: flex;
+      }
+      body.view-roleta #tela-roleta {
+        display: flex;
+      }
+      body.view-resultado #tela-resultado {
+        display: flex;
+      }
+
+      h2 {
+        font-size: clamp(32px, 5vw, 40px);
+        font-weight: 900;
+        margin-bottom: 1rem;
+      }
+
+      button {
+        font-family: var(--font-family);
+        font-weight: 900;
+        font-size: clamp(24px, 4vw, 32px);
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        border: 4px solid var(--preto);
+        box-shadow: 6px 6px 0px var(--preto);
+        cursor: pointer;
+        transition: all 0.1s ease;
+        text-transform: uppercase;
+      }
+
+      button:active {
+        transform: translate(4px, 4px);
+        box-shadow: 2px 2px 0px var(--preto);
+      }
+
+      button:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+        opacity: 0.7;
+        box-shadow: none;
+        transform: none;
+      }
+
+      #modal-cadastro {
+        background-color: var(--azul);
+        z-index: 100;
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+      }
+
+      #cadastro-logo {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: clamp(200px, 40vw, 400px);
+        height: auto;
+        z-index: 103;
+      }
+
+      .modal-content {
+        background: var(--branco);
+        padding: 2.5rem 3rem;
+        border-radius: 24px;
+        border: 6px solid var(--preto);
+        box-shadow: var(--border-shadow);
+        width: 90%;
+        max-width: 600px;
+        text-align: center;
+        z-index: 102;
+        margin-top: 100px;
+      }
+
+      .modal-content h2 {
+        color: var(--azul);
+      }
+      .modal-content p {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        opacity: 0.7;
+      }
+
+      #form-cadastro {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      #form-cadastro input {
+        font-family: var(--font-family);
+        font-weight: 700;
+        font-size: 22px;
+        padding: 1rem;
+        border: 4px solid var(--preto);
+        border-radius: 12px;
+        background-color: var(--fundo);
+        width: 100%;
+      }
+
+      #form-cadastro input:focus {
+        border-color: var(--azul);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.4);
+      }
+
+      #form-cadastro button {
+        grid-column: 1 / -1;
+        background-color: var(--verde);
+        color: var(--branco);
+        font-size: clamp(28px, 4.5vw, 32px);
+      }
+
+      #form-cadastro .input-full-width {
+        grid-column: 1 / -1;
+      }
+
+      /* ============ TELA 2: ROLETA ============ */
+      #tela-roleta {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 1rem;
+        gap: 1.5rem;
+        z-index: 10;
+        background-image: url("images/fundo.gif");
+        background-size: cover;
+        background-position: center;
+      }
+
+      #fixed-arrow {
+        width: 70px;
+        height: 90px;
+        background: var(--amarelo);
+        border: 6px solid var(--preto);
+        /* Prefixo para compatibilidade com Safari */
+        -webkit-clip-path: polygon(50% 100%, 0 0, 100% 0);
+        clip-path: polygon(50% 100%, 0 0, 100% 0);
+        filter: drop-shadow(4px 4px 0px var(--preto));
+        z-index: 10;
+        margin-bottom: -70px;
+        transform-origin: bottom center;
+      }
+
+      @keyframes arrow-wobble {
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        25% {
+          transform: rotate(-8deg);
+        }
+        75% {
+          transform: rotate(8deg);
+        }
+      }
+      .wobble {
+        animation: arrow-wobble 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .roulette-container {
+        position: relative;
+        width: var(--wheel-size);
+        height: var(--wheel-size);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #roulette-wheel {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        border: var(--border-thick) solid var(--preto);
+        background: conic-gradient(
+          var(--rosa) 0deg 30deg,
+          var(--verde-limao) 30deg 60deg,
+          var(--azul) 60deg 90deg,
+          var(--laranja) 90deg 120deg,
+          var(--amarelo) 120deg 150deg,
+          var(--roxo) 150deg 180deg,
+          var(--vermelho) 180deg 210deg,
+          var(--azul-claro) 210deg 240deg,
+          var(--magenta) 240deg 270deg,
+          var(--verde) 270deg 300deg,
+          var(--rosa-choque) 300deg 330deg,
+          var(--roxo-claro) 330deg 360deg
+        );
+        transition: transform 4s cubic-bezier(0.25, 1, 0.5, 1);
+        box-shadow: inset 0 0 25px 12px rgba(0, 0, 0, 0.2),
+          0 0 10px rgba(0, 0, 0, 0.3);
+      }
+
+      #roulette-wheel::after {
+        content: "";
+        position: absolute;
+        top: 5%;
+        left: 5%;
+        width: 90%;
+        height: 90%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(255, 255, 255, 0.4) 0%,
+          rgba(255, 255, 255, 0.2) 30%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      .division-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--preto);
+        transform-origin: center;
+        z-index: 5;
+      }
+
+      .slice {
+        position: absolute;
+        inset: 0;
+        text-align: center;
+        z-index: 6;
+      }
+
+      .slice span {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 900;
+        color: var(--branco);
+        text-transform: uppercase;
+        -webkit-text-stroke: 2px var(--preto);
+        text-stroke: 2px var(--preto);
+        /* Prefixo para compatibilidade com Safari */
+        -webkit-paint-order: stroke fill;
+        paint-order: stroke fill;
+        top: 35px;
+        font-size: clamp(10px, 2vmin, 14px);
+        width: 70%;
+        line-height: 1.1;
+        white-space: normal;
+      }
+
+      #slice-1 {
+        transform: rotate(15deg);
+      }
+      #slice-2 {
+        transform: rotate(45deg);
+      }
+      #slice-3 {
+        transform: rotate(75deg);
+      }
+      #slice-4 {
+        transform: rotate(105deg);
+      }
+      #slice-5 {
+        transform: rotate(135deg);
+      }
+      #slice-6 {
+        transform: rotate(165deg);
+      }
+      #slice-7 {
+        transform: rotate(195deg);
+      }
+      #slice-8 {
+        transform: rotate(225deg);
+      }
+      #slice-9 {
+        transform: rotate(255deg);
+      }
+      #slice-10 {
+        transform: rotate(285deg);
+      }
+      #slice-11 {
+        transform: rotate(315deg);
+      }
+      #slice-12 {
+        transform: rotate(345deg);
+      }
+
+      #spin-button {
+        position: relative;
+        z-index: 5;
+        width: 250px;
+        height: auto;
+        border-radius: 16px;
+        font-size: clamp(32px, 5vw, 40px);
+        background-color: var(--verde);
+        color: var(--branco);
+      }
+
+      #mascote-roleta {
+        position: absolute;
+        bottom: 2rem;
+        right: 2rem;
+        width: clamp(250px, 35vmin, 400px);
+        height: auto;
+        z-index: 11;
+        pointer-events: none;
+        image-rendering: -webkit-optimize-contrast;
+      }
+
+      /* ============ TELA 3: RESULTADO ============ */
+      #tela-resultado {
+        z-index: 20;
+        background-color: rgba(
+          255,
+          209,
+          220,
+          0.85
+        ); /* #FFD1DC com 85% de opacidade */
+        /* Prefixo para compatibilidade com Safari */
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
+        position: relative;
+      }
+
+      /* Container para o "burst" de confete do JS */
+      .confetti-container {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 23; /* Acima do conteúdo */
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: var(--amarelo);
+        opacity: 0.9;
+        animation: confetti-burst 2s ease-out 1;
+      }
+
+      @keyframes confetti-burst {
+        0% {
+          transform: translateY(-10vh) translateX(0) rotateZ(0deg) scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) translateX(var(--random-x, 0))
+            rotateZ(720deg) scale(0.5);
+          opacity: 0;
+        }
+      }
+
+      .result-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 1rem 2rem;
+        align-items: center;
+        justify-content: center;
+        width: 90%;
+        max-width: 1000px;
+        text-align: center;
+        z-index: 22;
+        position: relative;
+      }
+
+      #result-message {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        font-size: clamp(36px, 6vw, 48px);
+        font-weight: 900;
+        line-height: 1.3;
+        padding: 2rem;
+        background: var(--branco);
+        border: 6px solid var(--preto);
+        border-radius: 20px;
+        box-shadow: var(--border-shadow);
+        transition: border-color 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #result-message.result-win {
+        border-color: var(--verde);
+      }
+      #result-message.result-lose {
+        border-color: var(--rosa);
+      }
+
+      .result-actions {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        align-items: center;
+        margin-top: 1rem;
+      }
+
+      #main-action-button {
+        background-color: var(--rosa);
+        color: var(--branco);
+      }
+
+      #prize-image-container {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #prize-display-img {
+        max-width: clamp(300px, 45vmin, 500px);
+        height: auto;
+        transform-origin: bottom center;
+      }
+
+      @media (max-width: 767px) {
+        #form-cadastro {
+          grid-template-columns: 1fr;
+        }
+        #form-cadastro input {
+          grid-column: 1 / -1 !important;
+        }
+
+        .result-content {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto;
+          max-width: 90vw;
+          gap: 1rem;
+          height: 100%;
+          padding: 1rem;
+          align-content: center;
+        }
+        #result-message {
+          grid-column: 1 / -1;
+          grid-row: 1 / 2;
+        }
+        .result-actions {
+          grid-column: 1 / -1;
+          grid-row: 3 / 4;
+          flex-direction: column;
+          gap: 1rem;
+          width: 100%;
+        }
+        .result-actions button {
+          width: 100%;
+        }
+        #prize-image-container {
+          grid-column: 1 / -1;
+          grid-row: 2 / 3;
+        }
+
+        #mascote-roleta {
+          width: clamp(150px, 28vmin, 200px);
+          bottom: 1rem;
+          right: 1rem;
+        }
+
+        #prize-display-img {
+          max-width: clamp(220px, 60vmin, 300px);
+        }
+      }
+
+      /* --- Estilos para as Nuvens de Fundo no Cadastro --- */
+      #modal-cadastro .cloud-container {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 101;
+      }
+
+      .cloud {
+        position: absolute;
+        background: var(--branco);
+        border-radius: 50%;
+        opacity: 0.8;
+        filter: blur(5px);
+      }
+
+      .cloud::before,
+      .cloud::after {
+        content: "";
+        position: absolute;
+        background: inherit;
+        border-radius: inherit;
+      }
+
+      .cloud-1 {
+        width: 150px;
+        height: 80px;
+        top: 20%;
+        left: -200px;
+        animation: move-cloud-1 25s linear infinite;
+      }
+      .cloud-1::before {
+        width: 100px;
+        height: 60px;
+        top: -30px;
+        left: 30px;
+      }
+      .cloud-1::after {
+        width: 80px;
+        height: 50px;
+        top: -10px;
+        right: 20px;
+      }
+
+      .cloud-2 {
+        width: 200px;
+        height: 100px;
+        top: 50%;
+        left: -250px;
+        animation: move-cloud-2 30s linear infinite;
+        animation-delay: 5s;
+      }
+      .cloud-2::before {
+        width: 120px;
+        height: 70px;
+        top: -40px;
+        left: 40px;
+      }
+      .cloud-2::after {
+        width: 100px;
+        height: 60px;
+        top: -20px;
+        right: 30px;
+      }
+
+      .cloud-3 {
+        width: 120px;
+        height: 70px;
+        top: 70%;
+        left: -180px;
+        animation: move-cloud-3 20s linear infinite;
+        animation-delay: 10s;
+      }
+      .cloud-3::before {
+        width: 80px;
+        height: 50px;
+        top: -25px;
+        left: 20px;
+      }
+      .cloud-3::after {
+        width: 60px;
+        height: 40px;
+        top: -15px;
+        right: 10px;
+      }
+
+      @keyframes move-cloud-1 {
+        0% {
+          transform: translateX(0);
+          opacity: 0.8;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(calc(100vw + 200px));
+          opacity: 0.8;
+        }
+      }
+      @keyframes move-cloud-2 {
+        0% {
+          transform: translateX(0);
+          opacity: 0.7;
+        }
+        10% {
+          opacity: 0.9;
+        }
+        90% {
+          opacity: 0.9;
+        }
+        100% {
+          transform: translateX(calc(100vw + 250px));
+          opacity: 0.7;
+        }
+      }
+      @keyframes move-cloud-3 {
+        0% {
+          transform: translateX(0);
+          opacity: 0.9;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(calc(100vw + 180px));
+          opacity: 0.9;
+        }
+      }
+
+      /* --- Fundo de Confete Animado - APENAS para TELA DE RESULTADO --- */
+      #tela-resultado .confetti-background-container {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 21;
+      }
+
+      .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: var(--amarelo);
+        top: -20px;
+        opacity: 0.9;
+        animation: confetti-fall-piece 10s linear infinite;
+      }
+
+      @keyframes confetti-fall-piece {
+        0% {
+          transform: translateY(0) rotateZ(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) rotateZ(720deg);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="view-cadastro">
+    <div id="modal-cadastro" class="modal-overlay">
+      <div class="cloud-container">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+      </div>
+
+      <img id="cadastro-logo" src="images/logo.png" alt="Logo Letrinha" />
+      <div class="modal-content">
+        <h2>Roleta de Brindes Letrinha</h2>
+        <p>Preencha seus dados para girar e ganhar!</p>
+        <form id="form-cadastro">
+          <input
+            type="text"
+            id="nome_completo"
+            name="name"
+            placeholder="Nome Completo *"
+            required
+            class="input-full-width"
+          />
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="E-mail *"
+            required
+          />
+          <input
+            type="tel"
+            id="telefone"
+            name="telefone"
+            placeholder="Telefone"
+          />
+          <input
+            type="text"
+            id="cargo"
+            name="cargo"
+            placeholder="Cargo"
+            class="input-full-width"
+          />
+
+          <button type="submit">Confirmar</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="tela-roleta" class="view-container">
+      <div id="fixed-arrow"></div>
+
+      <div class="roulette-container">
+        <div id="roulette-wheel">
+          <div class="division-line" style="transform: rotate(30deg)"></div>
+          <div class="division-line" style="transform: rotate(60deg)"></div>
+          <div class="division-line" style="transform: rotate(90deg)"></div>
+          <div class="division-line" style="transform: rotate(120deg)"></div>
+          <div class="division-line" style="transform: rotate(150deg)"></div>
+          <div class="division-line" style="transform: rotate(180deg)"></div>
+
+          <div class="slice" id="slice-1"><span>BOMBOM</span></div>
+          <div class="slice" id="slice-2"><span>TENTE NOVAMENTE</span></div>
+          <div class="slice" id="slice-3"><span>ADESIVO</span></div>
+          <div class="slice" id="slice-4"><span>BOMBOM</span></div>
+          <div class="slice" id="slice-5"><span>LIVRO DE COLORIR</span></div>
+          <div class="slice" id="slice-6"><span>TENTE NOVAMENTE</span></div>
+          <div class="slice" id="slice-7"><span>BOMBOM</span></div>
+          <div class="slice" id="slice-8"><span>ADESIVO</span></div>
+          <div class="slice" id="slice-9"><span>BOMBOM</span></div>
+          <div class="slice" id="slice-10"><span>TENTE NOVAMENTE</span></div>
+          <div class="slice" id="slice-11"><span>BOMBOM</span></div>
+          <div class="slice" id="slice-12"><span>TENTE NOVAMENTE</span></div>
+        </div>
+      </div>
+
+      <img
+        id="mascote-roleta"
+        src="images/mascote.gif"
+        alt="Mascote Letrinha"
+      />
+      <button id="spin-button">GIRAR</button>
+    </div>
+
+    <div id="tela-resultado" class="view-container">
+      <div
+        id="resultado-confetti-bg"
+        class="confetti-background-container"
+      ></div>
+      <div id="result-confetti-container" class="confetti-container"></div>
+
+      <div class="result-content">
+        <h2 id="result-message"></h2>
+        <div class="result-actions">
+          <button id="main-action-button"></button>
+        </div>
+        <div id="prize-image-container">
+          <img id="prize-display-img" alt="Imagem do Prêmio / Feedback" />
+        </div>
+      </div>
+    </div>
+
+    <audio
+      id="audio-spin"
+      src="sounds/spin-loop.mp3"
+      loop
+      preload="auto"
+      playsinline
+    ></audio>
+    <audio
+      id="audio-win"
+      src="sounds/win.mp3"
+      preload="auto"
+      playsinline
+    ></audio>
+    <audio
+      id="audio-lose"
+      src="sounds/lose.mp3"
+      preload="auto"
+      playsinline
+    ></audio>
+
+    <script>
+      // Correção para 100vh em navegadores mobile
+      const setVh = () => {
+        document.documentElement.style.setProperty(
+          "--vh",
+          `${window.innerHeight * 0.01}px`
+        );
+      };
+      window.addEventListener("resize", setVh);
+      setVh();
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const RouletteApp = {
+          elements: {},
+          config: {
+            slices: [
+              {
+                id: "BOMBOM",
+                label: "BOMBOM",
+                stockKey: "stockBombom",
+                image: "images/ourobranco.png",
+              },
+              {
+                id: "TENTE_NOVAMENTE",
+                label: "TENTE NOVAMENTE",
+                stockKey: null,
+                image: "images/tentenovamente.png",
+              },
+              {
+                id: "ADESIVO",
+                label: "ADESIVO",
+                stockKey: "stockAdesivo",
+                image: "images/adesivos.png",
+              },
+              {
+                id: "BOMBOM",
+                label: "BOMBOM",
+                stockKey: "stockBombom",
+                image: "images/ourobranco.png",
+              },
+              {
+                id: "LIVRO_DE_COLORIR",
+                label: "LIVRO DE COLORIR",
+                stockKey: "stockLivroColorir",
+                image: "images/bobiegods.png",
+              },
+              {
+                id: "TENTE_NOVAMENTE",
+                label: "TENTE NOVAMENTE",
+                stockKey: null,
+                image: "images/tentenovamente.png",
+              },
+              {
+                id: "BOMBOM",
+                label: "BOMBOM",
+                stockKey: "stockBombom",
+                image: "images/ourobranco.png",
+              },
+              {
+                id: "ADESIVO",
+                label: "ADESIVO",
+                stockKey: "stockAdesivo",
+                image: "images/adesivos.png",
+              },
+              {
+                id: "BOMBOM",
+                label: "BOMBOM",
+                stockKey: "stockBombom",
+                image: "images/ourobranco.png",
+              },
+              {
+                id: "TENTE_NOVAMENTE",
+                label: "TENTE NOVAMENTE",
+                stockKey: null,
+                image: "images/tentenovamente.png",
+              },
+              {
+                id: "BOMBOM",
+                label: "BOMBOM",
+                stockKey: "stockBombom",
+                image: "images/ourobranco.png",
+              },
+              {
+                id: "TENTE_NOVAMENTE",
+                label: "TENTE NOVAMENTE",
+                stockKey: null,
+                image: "images/tentenovamente.png",
+              },
+            ],
+            sliceAngles: [
+              15, 45, 75, 105, 135, 165, 195, 225, 255, 285, 315, 345,
+            ],
+            SLICE_DEGREES: 30,
+            TARGET_WEIGHTS: {
+              LIVRO_DE_COLORIR: 1 / 12,
+              ADESIVO: 2 / 12,
+              BOMBOM: 5 / 12,
+              TENTE_NOVAMENTE: 4 / 12,
+            },
+            confettiColors: [
+              "var(--rosa)",
+              "var(--azul)",
+              "var(--amarelo)",
+              "var(--verde)",
+              "var(--laranja)",
+              "var(--roxo)",
+              "var(--vermelho)",
+              "var(--azul-claro)",
+              "var(--magenta)",
+              "var(--verde-limao)",
+              "var(--rosa-choque)",
+              "var(--roxo-claro)",
+            ],
+          },
+          state: {
+            isSpinning: false,
+            currentUser: {},
+            currentWheelRotation: 0,
+            audioUnlocked: false,
+          },
+
+          init() {
+            this.bindElements();
+            this.bindEvents();
+            this.populateResultConfettiBackground();
+            this.checkAndInitStock();
+            this.checkAndInitData();
+            console.log("App Roleta inicializado.");
+          },
+
+          bindElements() {
+            this.elements.body = document.body;
+            this.elements.formCadastro =
+              document.getElementById("form-cadastro");
+            this.elements.inputNomeCompleto =
+              document.getElementById("nome_completo");
+            this.elements.inputEmail = document.getElementById("email");
+            this.elements.inputCargo = document.getElementById("cargo");
+            this.elements.inputTelefone = document.getElementById("telefone");
+            this.elements.spinButton = document.getElementById("spin-button");
+            this.elements.rouletteWheel =
+              document.getElementById("roulette-wheel");
+            this.elements.resultMessage =
+              document.getElementById("result-message");
+            this.elements.prizeDisplayImg =
+              document.getElementById("prize-display-img");
+            this.elements.mainActionButton =
+              document.getElementById("main-action-button");
+            this.elements.fixedArrow = document.getElementById("fixed-arrow");
+            this.elements.resultConfettiContainer = document.getElementById(
+              "result-confetti-container"
+            );
+            this.elements.audioSpin = document.getElementById("audio-spin");
+            this.elements.audioWin = document.getElementById("audio-win");
+            this.elements.audioLose = document.getElementById("audio-lose");
+            this.elements.resultadoConfettiBg = document.getElementById(
+              "resultado-confetti-bg"
+            );
+          },
+
+          bindEvents() {
+            this.elements.formCadastro.addEventListener("submit", (e) =>
+              this.handleFormSubmit(e)
+            );
+            this.elements.spinButton.addEventListener("click", () =>
+              this.handleSpinClick()
+            );
+          },
+
+          populateResultConfettiBackground() {
+            const container = this.elements.resultadoConfettiBg;
+            const colors = this.config.confettiColors;
+            const pieceCount = 30;
+
+            if (!container) return;
+            for (let i = 0; i < pieceCount; i++) {
+              const piece = document.createElement("div");
+              piece.className = "confetti-piece";
+
+              piece.style.left = `${Math.random() * 100}vw`;
+              piece.style.backgroundColor =
+                colors[Math.floor(Math.random() * colors.length)];
+
+              const size = Math.random() * 8 + 4;
+              piece.style.width = `${size}px`;
+              piece.style.height = `${size}px`;
+
+              piece.style.opacity = Math.random() * 0.5 + 0.5;
+
+              piece.style.animationDelay = `${Math.random() * 12}s`;
+              piece.style.animationDuration = `${Math.random() * 5 + 8}s`;
+
+              container.appendChild(piece);
+            }
+          },
+
+          // =================================================================
+          // SCRIPT DE ÁUDIO CORRIGIDO
+          // =================================================================
+          unlockAudio() {
+            if (this.state.audioUnlocked) return;
+
+            // Desbloqueia APENAS os sons de resultado (win/lose),
+            // pois eles são acionados por um timer, não por um clique direto.
+            const audios = [this.elements.audioWin, this.elements.audioLose];
+
+            audios.forEach((audio) => {
+              audio.muted = true;
+            });
+
+            let promises = audios.map((audio) => audio.play());
+
+            Promise.all(promises)
+              .then(() => {
+                audios.forEach((audio) => {
+                  audio.pause();
+                  audio.currentTime = 0;
+                  audio.muted = false;
+                });
+                this.state.audioUnlocked = true;
+                console.log(
+                  "Áudio de resultado desbloqueado (silenciosamente) pelo usuário."
+                );
+              })
+              .catch((error) => {
+                audios.forEach((audio) => {
+                  audio.muted = false;
+                });
+                console.warn(
+                  "Desbloqueio de áudio de resultado falhou, será tentado novamente.",
+                  error
+                );
+              });
+          },
+          // =================================================================
+          // FIM DA CORREÇÃO
+          // =================================================================
+
+          async handleFormSubmit(e) {
+            e.preventDefault();
+            this.unlockAudio();
+
+            // Monta o payload no formato que a API espera:
+            const payload = {
+              name: this.elements.inputNomeCompleto.value?.trim(),
+              email: this.elements.inputEmail.value?.trim() || null,
+              telefone: this.elements.inputTelefone.value?.trim() || "",
+              cargo: this.elements.inputCargo.value?.trim() || "",
+            };
+
+            // Validação rápida no front (opcional)
+            if (!payload.name || !payload.email) {
+              alert("Preencha nome e e-mail.");
+              return;
+            }
+
+            // Desabilita o submit enquanto envia
+            const submitBtn = this.elements.formCadastro.querySelector(
+              'button[type="submit"]'
+            );
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Enviando...";
+
+            try {
+              const resp = await fetch(
+                "https://dashboard.sensoramaplay.com/api/leads",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    // Se precisar de token:
+                    // 'Authorization': 'Bearer SEU_TOKEN_AQUI'
+                  },
+                  body: JSON.stringify(payload),
+                }
+              );
+
+              if (!resp.ok) {
+                // Loga o corpo de erro pra você ver no DevTools > Network
+                let errorText = "";
+                try {
+                  errorText = await resp.text();
+                } catch {}
+                throw new Error(`Falha no envio (${resp.status}) ${errorText}`);
+              }
+
+              // Opcional: ver resposta
+              const data = await resp.json();
+              console.log("Lead cadastrado com sucesso:", data);
+
+              // Guarda o usuário no estado e libera a roleta
+              this.state.currentUser = {
+                nome_completo: payload.name,
+                email: payload.email,
+                cargo: payload.cargo,
+                telefone: payload.telefone,
+              };
+              this.elements.body.className = "view-roleta";
+            } catch (err) {
+              console.error("Erro ao enviar lead:", err);
+              alert(
+                "Não foi possível enviar seus dados. Verifique sua conexão e tente novamente."
+              );
+              return; // não libera a roleta em caso de erro
+            } finally {
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Confirmar";
+            }
+          },
+
+          handleSpinClick() {
+            if (this.state.isSpinning) return;
+
+            // O 'audio-spin' é tocado por um clique direto, o navegador permite.
+            this.elements.audioSpin
+              .play()
+              .catch((e) => console.error("Erro ao tocar áudio de giro:", e));
+
+            const prize = this.pickPrize();
+            this.spinWheel(prize.index);
+
+            // Este setTimeout agora vai parar o áudio corretamente.
+            setTimeout(() => {
+              this.elements.audioSpin.pause();
+              this.elements.audioSpin.currentTime = 0;
+
+              this.elements.fixedArrow.classList.add("wobble");
+              this.elements.fixedArrow.addEventListener(
+                "animationend",
+                () => {
+                  this.elements.fixedArrow.classList.remove("wobble");
+                },
+                { once: true }
+              );
+
+              this.showResult(prize);
+            }, 4100);
+          },
+
+          triggerWinConfetti() {
+            this.elements.resultConfettiContainer.innerHTML = "";
+            const colors = this.config.confettiColors;
+
+            for (let i = 0; i < 100; i++) {
+              const confetti = document.createElement("div");
+              confetti.className = "confetti";
+
+              const startX = Math.random() * 100;
+              confetti.style.left = `${startX}vw`;
+              confetti.style.top = `${Math.random() * 50 - 60}vh`;
+
+              const randomX = (Math.random() - 0.5) * 2 * 60;
+              confetti.style.setProperty("--random-x", `${randomX}vw`);
+
+              confetti.style.backgroundColor =
+                colors[Math.floor(Math.random() * colors.length)];
+              confetti.style.width = `${Math.random() * 10 + 5}px`;
+              confetti.style.height = confetti.style.width;
+              confetti.style.opacity = Math.random() + 0.3;
+              confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+
+              this.elements.resultConfettiContainer.appendChild(confetti);
+
+              setTimeout(() => {
+                confetti.remove();
+              }, 2500);
+            }
+          },
+
+          checkAndInitStock(force = false) {
+            const defaults = {
+              stockBombom: 500,
+              stockAdesivo: 200,
+              stockLivroColorir: 200,
+            };
+            for (const key in defaults) {
+              if (force || localStorage.getItem(key) === null) {
+                localStorage.setItem(key, defaults[key]);
+              }
+            }
+            console.log("Estoque inicializado:", this.getStock());
+          },
+
+          checkAndInitData(force = false) {
+            if (force || localStorage.getItem("spinEntries") === null) {
+              localStorage.setItem("spinEntries", JSON.stringify([]));
+            }
+          },
+
+          getStock() {
+            return {
+              stockBombom: parseInt(localStorage.getItem("stockBombom") || 0),
+              stockAdesivo: parseInt(localStorage.getItem("stockAdesivo") || 0),
+              stockLivroColorir: parseInt(
+                localStorage.getItem("stockLivroColorir") || 0
+              ),
+            };
+          },
+
+          pickPrize() {
+            const stock = this.getStock();
+            let weights = { ...this.config.TARGET_WEIGHTS };
+
+            if (stock.stockLivroColorir <= 0) weights.LIVRO_DE_COLORIR = 0;
+            if (stock.stockAdesivo <= 0) weights.ADESIVO = 0;
+            if (stock.stockBombom <= 0) weights.BOMBOM = 0;
+
+            const totalWeight = Object.values(weights).reduce(
+              (sum, w) => sum + w,
+              0
+            );
+
+            if (
+              totalWeight === 0 ||
+              (totalWeight === weights.TENTE_NOVAMENTE &&
+                weights.TENTE_NOVAMENTE > 0)
+            ) {
+              const tenteSlices = [];
+              this.config.slices.forEach((slice, index) => {
+                if (slice.id === "TENTE_NOVAMENTE") {
+                  tenteSlices.push({ ...slice, index });
+                }
+              });
+              return tenteSlices[
+                Math.floor(Math.random() * tenteSlices.length)
+              ];
+            }
+
+            let random = Math.random() * totalWeight;
+            let chosenPrizeId = "TENTE_NOVAMENTE";
+
+            for (const [id, weight] of Object.entries(weights)) {
+              if (id === "TENTE_NOVAMENTE") continue;
+              if (weight > 0 && random < weight) {
+                chosenPrizeId = id;
+                break;
+              }
+              random -= weight;
+            }
+
+            const possibleSlices = [];
+            this.config.slices.forEach((slice, index) => {
+              if (slice.id === chosenPrizeId) {
+                possibleSlices.push({ ...slice, index });
+              }
+            });
+
+            if (possibleSlices.length === 0) {
+              const tenteSlices = [];
+              this.config.slices.forEach((slice, index) => {
+                if (slice.id === "TENTE_NOVAMENTE") {
+                  tenteSlices.push({ ...slice, index });
+                }
+              });
+              return tenteSlices[
+                Math.floor(Math.random() * tenteSlices.length)
+              ];
+            }
+
+            const finalSlice =
+              possibleSlices[Math.floor(Math.random() * possibleSlices.length)];
+            return finalSlice;
+          },
+
+          spinWheel(prizeIndex) {
+            this.state.isSpinning = true;
+            this.elements.spinButton.disabled = true;
+            this.elements.spinButton.textContent = "...";
+
+            const currentRotation = this.state.currentWheelRotation;
+            const targetAngle = this.config.sliceAngles[prizeIndex];
+            const randomOffset =
+              (Math.random() - 0.5) * (this.config.SLICE_DEGREES * 0.7);
+            const targetVisualAngle = 360 - targetAngle - randomOffset;
+            const spins = 5 * 360;
+
+            const currentVisualAngle = currentRotation % 360;
+            const angleDiff = 360 - currentVisualAngle + targetVisualAngle;
+            const totalRotation = currentRotation + spins + angleDiff;
+
+            this.state.currentWheelRotation = totalRotation;
+            this.elements.rouletteWheel.style.transition =
+              "transform 4s cubic-bezier(0.25, 1, 0.5, 1)";
+            this.elements.rouletteWheel.style.transform = `rotate(${totalRotation}deg)`;
+          },
+
+          updateStock(prize) {
+            if (!prize.stockKey) return;
+            let currentStock = parseInt(
+              localStorage.getItem(prize.stockKey) || 0
+            );
+            if (currentStock > 0) {
+              localStorage.setItem(prize.stockKey, currentStock - 1);
+            }
+          },
+
+          saveEntry(prize) {
+            try {
+              const entries = JSON.parse(
+                localStorage.getItem("spinEntries") || "[]"
+              );
+              const newEntry = {
+                ...this.state.currentUser,
+                premio: prize.label,
+                timestamp: new Date().toISOString(),
+              };
+              entries.push(newEntry);
+              localStorage.setItem("spinEntries", JSON.stringify(entries));
+            } catch (e) {
+              console.error("Falha ao salvar entrada:", e);
+            }
+          },
+
+          showResult(prize) {
+            this.updateStock(prize);
+            this.saveEntry(prize);
+
+            const nome =
+              (this.state.currentUser.nome_completo || "").split(" ")[0] ||
+              "você";
+            this.elements.resultConfettiContainer.innerHTML = "";
+
+            if (prize.id === "TENTE_NOVAMENTE") {
+              this.elements.audioLose
+                .play()
+                .catch((e) =>
+                  console.error("Erro ao tocar áudio de derrota:", e)
+                );
+              this.elements.resultMessage.textContent = `Quase, ${nome}! Tente novamente.`;
+              this.elements.resultMessage.className = "result-lose";
+              this.elements.prizeDisplayImg.src = "images/tentenovamente.png";
+              this.elements.mainActionButton.textContent = "Tentar Novamente";
+              this.elements.mainActionButton.onclick = () => {
+                this.elements.body.className = "view-roleta";
+                this.elements.resultMessage.className = "";
+              };
+            } else {
+              this.elements.audioWin
+                .play()
+                .catch((e) =>
+                  console.error("Erro ao tocar áudio de vitória:", e)
+                );
+              this.triggerWinConfetti();
+              this.elements.resultMessage.textContent = `Parabéns, ${nome}! Você ganhou: ${prize.label}`;
+              this.elements.resultMessage.className = "result-win";
+              this.elements.prizeDisplayImg.src = prize.image;
+              this.elements.mainActionButton.textContent = "Concluir";
+              this.elements.mainActionButton.onclick = () => {
+                this.elements.formCadastro.reset();
+                this.state.currentUser = {};
+                this.elements.resultMessage.className = "";
+                this.elements.body.className = "view-cadastro";
+              };
+            }
+
+            this.elements.body.className = "view-resultado";
+            this.state.isSpinning = false;
+            this.elements.spinButton.disabled = false;
+            this.elements.spinButton.textContent = "GIRAR";
+          },
+        };
+
+        RouletteApp.init();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,296 @@
+/* --- Importação da Fonte Cartoon --- */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+
+/* --- Configurações Globais (Paleta Letrinha) --- */
+:root {
+    /* Paleta Oficial */
+    --pink: #E64383;
+    --blue: #5C9CFF;
+    --yellow: #E5B630;
+    --green: #5CC66E;
+    
+    /* Cores de Suporte */
+    --bg-cream: #FDFCEF;
+    --border-color: #4A4A4A; /* Contorno cartoon */
+    --light-text: #FFFFFF;
+    --dark-text: #4A4A4A;
+
+    /* Variáveis para a roleta */
+    --wheel-size: 550px; /* Tamanho ajustado da roleta */
+    --num-segments: 5;
+    --segment-angle: calc(360deg / var(--num-segments));
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Nunito', sans-serif; 
+    background-color: var(--bg-cream);
+    overflow: hidden;
+    touch-action: manipulation;
+    display: flex; /* Garante que o body use flex para centralizar o app */
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Sistema de Modal (Popup) Estilo Cartoon --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 24px; 
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    border: 4px solid var(--border-color);
+    box-shadow: 8px 8px 0px var(--border-color);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: var(--dark-text);
+    font-size: 2rem;
+    font-weight: 900;
+}
+
+.modal-content p {
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* --- Formulário Cartoon --- */
+#registration-form input {
+    width: calc(100% - 2rem);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 3px solid #ccc;
+    border-radius: 12px; 
+    font-size: 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+#registration-form input:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+/* --- Botões Cartoon --- */
+#registration-form button, #close-result-modal {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 3px solid var(--border-color);
+    background-color: var(--blue);
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    box-shadow: 4px 4px 0px var(--border-color);
+}
+
+#registration-form button:hover {
+    background-color: #4a88da;
+}
+
+#registration-form button:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+#close-result-modal {
+    background-color: var(--pink);
+    box-shadow: 4px 4px 0px var(--border-color);
+}
+
+#close-result-modal:hover {
+    background-color: #d13872;
+}
+
+#close-result-modal:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+
+/* --- Layout Principal --- */
+#app-container {
+    display: none; 
+    flex-direction: row; /* Mascote ao lado da roleta */
+    align-items: center;
+    justify-content: center;
+    gap: 5rem; /* Espaço maior entre mascote e roleta */
+    max-width: 1200px; /* Limita o tamanho do container */
+    padding: 2rem;
+    box-sizing: border-box;
+    height: 100%; /* Garante que o container ocupe a altura total */
+}
+
+/* --- Mascote --- */
+.mascote-container {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Ajuste o alinhamento vertical se necessário */
+    align-self: flex-end; /* Alinha o mascote à parte inferior da área */
+    margin-bottom: 50px; /* Afasta um pouco da base */
+}
+
+.mascote {
+    width: 250px; /* Aumentei um pouco para melhor visibilidade */
+    height: auto;
+    filter: drop-shadow(6px 6px 0px var(--border-color));
+}
+
+/* --- Wrapper da Roleta e Ponteiro --- */
+#roulette-wrapper {
+    position: relative;
+    width: var(--wheel-size);
+    height: var(--wheel-size);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    overflow: visible; /* Permite que a sombra da roleta apareça */
+}
+
+/* --- Roleta Cartoon --- */
+#wheel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 12px solid var(--border-color); 
+    background: transparent; /* Os segmentos farão a cor */
+    box-shadow: 10px 10px 0px var(--border-color);
+    overflow: hidden; /* Garante que os segmentos não passem */
+    transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1); /* Animação da roleta */
+}
+
+/* --- Segmentos da Roleta --- */
+.segmento {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 50%;
+    transform-origin: 0% 100%; /* Pivô para rotação */
+    background-color: var(--color); /* Define a cor via style no HTML */
+    border-radius: 0 0 0 100%; /* Cria o formato de fatia */
+    border: 2px solid rgba(0,0,0,0.1); /* Linha divisória sutil */
+    box-sizing: border-box;
+
+    /* Rotação inicial de cada segmento para formar a roleta */
+    transform: rotate(calc(var(--i) * var(--segment-angle))) skewY(calc(90deg - var(--segment-angle)));
+}
+
+/* Corrige a deformação do conteúdo dentro do segmento */
+.segmento span {
+    position: absolute;
+    left: -100%; /* Move para o centro da fatia */
+    width: 200%;
+    height: 200%;
+    display: flex;
+    align-items: flex-start; /* Alinha no topo da fatia */
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--light-text);
+    text-shadow: -2px 0 var(--border-color), 0 2px var(--border-color), 2px 0 var(--border-color), 0 -2px var(--border-color);
+    
+    /* Desfaz a skew e rotaciona o texto para ficar reto */
+    transform: skewY(calc(var(--segment-angle) - 90deg)) rotate(calc(var(--segment-angle) / 2 + 90deg)) translateY(20px) translateX(25px);
+    
+    /* Ajuste específico para o texto do Brinde Letrinha (amarelo) */
+    color: var(--light-text);
+}
+
+.segmento:nth-child(3) span { /* O terceiro segmento é o amarelo */
+    color: var(--dark-text); 
+    text-shadow: -2px 0 var(--light-text), 0 2px var(--light-text), 2px 0 var(--light-text), 0 -2px var(--light-text);
+}
+
+/* --- Ponteiro da Roleta (agora é fixo) --- */
+#pointer {
+    position: absolute;
+    top: -20px; /* Coloca o ponteiro acima da roleta */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px; /* Largura do ponteiro */
+    height: 100px; /* Altura do ponteiro */
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%); /* Forma de triângulo */
+    background-color: var(--yellow); /* Cor do ponteiro */
+    border: 5px solid var(--border-color);
+    box-shadow: 4px 4px 0px var(--border-color);
+    z-index: 20; /* Garante que fique em cima de tudo */
+}
+
+
+/* --- Botão Central GIRAR --- */
+#spin-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130px; /* Aumentei o botão */
+    height: 130px;
+    border-radius: 50%;
+    background: var(--light-text);
+    border: 5px solid var(--border-color);
+    z-index: 15; /* Acima dos segmentos e abaixo do ponteiro */
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    color: var(--dark-text);
+    font-size: 2.5rem; /* Texto maior */
+    font-weight: 900;
+    font-family: 'Nunito', sans-serif;
+    line-height: 1;
+    display: flex; /* Para centralizar o texto */
+    align-items: center;
+    justify-content: center;
+    box-shadow: 6px 6px 0px var(--border-color);
+    transition: all 0.1s ease;
+}
+
+#spin-button::before {
+    content: 'GIRAR';
+}
+
+#spin-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#spin-button:active:not(:disabled) {
+    transform: translate(-50%, -50%) translate(6px, 6px);
+    box-shadow: none;
+}
