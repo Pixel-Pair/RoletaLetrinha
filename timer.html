@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Timer Sorteio Letrinha</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Titan+One&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --rosa: #ff69b4;
+        --azul: #6495ed;
+        --amarelo: #ffd700;
+        --verde: #32cd32;
+        --preto: #2c3e50;
+        --branco: #ffffff;
+        --fundo-claro: #e0f2f7;
+
+        --font-family: "Nunito", sans-serif;
+        --timer-font-family: "Titan One", cursive;
+        
+        --border-thickness: clamp(5px, 0.8vw, 8px);
+        --border-radius: clamp(25px, 3vw, 40px);
+        --box-shadow: var(--border-thickness) var(--border-thickness) 0px var(--preto);
+        --text-stroke: clamp(3px, 0.5vw, 5px);
+
+        --vh: 1vh;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        height: calc(var(--vh, 1vh) * 100);
+        font-family: var(--font-family);
+        color: var(--preto);
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--azul) 0%, var(--fundo-claro) 100%);
+      }
+
+      #main-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        padding: clamp(1.5rem, 4vw, 2.5rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr;
+        gap: clamp(1.5rem, 4vw, 3rem);
+        width: 100%;
+        max-width: 1400px;
+        height: 95%;
+        max-height: 900px;
+      }
+
+      .panel {
+        background: var(--branco);
+        border: var(--border-thickness) solid var(--preto);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: clamp(1.5rem, 3.5vw, 3rem);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: 100%;
+        position: relative;
+        transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+      }
+      .panel:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--border-thickness) calc(var(--border-thickness) + 5px) 0px var(--preto);
+      }
+
+      #timer-panel {
+        background-color: var(--amarelo);
+        color: var(--preto);
+      }
+
+      .timer-title {
+        font-size: clamp(24px, 4.5vw, 48px);
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 1.1;
+        margin-bottom: 2vh;
+      }
+
+      #timer-display {
+        font-family: var(--timer-font-family);
+        font-weight: 400;
+        /* Ajustei o tamanho da fonte para caber HH:MM:SS (8 caracteres) */
+        font-size: clamp(70px, 17vw, 260px);
+        line-height: 1;
+        margin: 2vh 0;
+        font-variant-numeric: tabular-nums;
+        color: var(--branco);
+        -webkit-text-stroke: var(--text-stroke) var(--preto);
+        text-shadow: 6px 6px 0px rgba(0,0,0,0.25);
+        letter-spacing: 1px;
+      }
+
+      .timer-subtitle {
+        font-size: clamp(18px, 2.8vw, 36px);
+        font-weight: 800;
+        background: var(--branco);
+        padding: 0.8em 1.5em;
+        border-radius: 100px;
+        border: clamp(3px, 0.6vw, 5px) solid var(--preto);
+        box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+        margin-top: 2vh;
+      }
+
+      #info-panel {
+        background-color: var(--branco);
+        justify-content: space-evenly;
+      }
+
+      .info-header {
+          flex-grow: 0;
+      }
+
+      .info-title {
+        color: var(--rosa);
+        font-size: clamp(26px, 3.8vw, 52px);
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 2vh;
+      }
+
+      .highlight {
+        color: var(--azul);
+        display: block;
+        font-size: 1.3em;
+        margin-top: 0.2em;
+        text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+      }
+
+      .info-content-area {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-end;
+          flex-grow: 1;
+          width: 100%;
+          gap: 2vh;
+          margin-top: 3vh;
+      }
+
+      #qr-container {
+        width: clamp(180px, 28vmin, 350px);
+        height: clamp(180px, 28vmin, 350px);
+        background: var(--fundo-claro);
+        border: clamp(4px, 0.8vw, 6px) solid var(--preto);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+        box-shadow: var(--box-shadow);
+      }
+
+      #qr-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 5%;
+      }
+
+      #mascote-container {
+        flex-grow: 1;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        width: 100%;
+        min-height: 0;
+      }
+
+      #mascote-img {
+        max-width: 100%;
+        max-height: 38vh;
+        object-fit: contain;
+        filter: drop-shadow(8px 8px 0px rgba(0,0,0,0.2));
+        transition: transform 0.3s ease;
+      }
+      #mascote-img:hover {
+          transform: scale(1.03);
+      }
+
+      /* --- iPad em MODO RETRATO (Portrait) --- */
+      @media (orientation: portrait) and (max-width: 1024px) {
+        #main-container {
+            padding: 1.2rem;
+        }
+        .content-grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          gap: 1.5rem;
+          max-height: none;
+          height: auto;
+        }
+        #timer-panel {
+             padding: clamp(1.5rem, 4vw, 2.5rem);
+             justify-content: space-evenly;
+        }
+        .timer-title {
+            margin-bottom: 1.5vh;
+        }
+        #timer-display {
+            /* Ajuste para HH:MM:SS no modo retrato */
+            font-size: clamp(90px, 15vh, 160px);
+            margin: 0.5vh 0;
+        }
+        .timer-subtitle {
+            margin-top: 1.5vh;
+        }
+        .info-content-area {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(1rem, 3vw, 2rem);
+            margin-top: 2vh;
+            flex-wrap: wrap;
+        }
+        #qr-container {
+            width: clamp(150px, 35vw, 220px);
+            height: clamp(150px, 35vw, 220px);
+            margin-bottom: 0;
+        }
+        #mascote-container {
+            flex-grow: 0;
+            width: auto;
+        }
+        #mascote-img {
+            max-height: clamp(150px, 22vh, 250px);
+            max-width: clamp(150px, 40vw, 250px);
+        }
+      }
+
+      /* --- Celulares --- */
+      @media (max-width: 767px) {
+           #main-container { padding: 1rem; }
+           .content-grid { grid-template-rows: auto auto; height: auto; gap: 1rem; }
+           .panel { padding: 1.5rem; }
+           #timer-display { font-size: 17vw; /* Ajuste para caber no celular */ }
+           .info-content-area { flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; }
+           #qr-container { width: clamp(180px, 50vw, 250px); height: clamp(180px, 50vw, 250px); }
+      }
+
+      /* --- Nuvens de fundo --- */
+      .cloud-container { position: absolute; inset: 0; overflow: hidden; z-index: 1; pointer-events: none; opacity: 0.5; }
+      .cloud { position: absolute; background: rgba(255, 255, 255, 0.9); border-radius: 50%; filter: blur(7px); }
+      .cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: inherit; }
+      .cloud-1 { width: 300px; height: 150px; top: 10%; left: -350px; animation: move-cloud 50s linear infinite; }
+      .cloud-1::before { width: 150px; height: 120px; top: -60px; left: 50px; }
+      .cloud-1::after { width: 140px; height: 110px; top: -40px; right: 40px; }
+      .cloud-2 { width: 400px; height: 200px; top: 60%; left: -450px; animation: move-cloud 65s linear infinite reverse; }
+      .cloud-2::before { width: 200px; height: 170px; top: -80px; left: 70px; }
+      .cloud-2::after { width: 170px; height: 140px; top: -50px; right: 60px; }
+      .cloud-3 { width: 220px; height: 110px; top: 30%; right: -300px; animation: move-cloud 55s linear infinite; animation-delay: 10s; }
+      .cloud-3::before { width: 110px; height: 85px; top: -45px; left: 25px; }
+      .cloud-3::after { width: 100px; height: 75px; top: -20px; right: 15px; }
+      @keyframes move-cloud { 0% { transform: translateX(-100vw); } 100% { transform: translateX(200vw); } }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="cloud-container">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+    </div>
+
+    <div id="main-container">
+      <div class="content-grid">
+
+        <div id="timer-panel" class="panel">
+          <h2 class="timer-title">Próximo sorteio em:</h2>
+          <div id="timer-display">01:30:00</div>
+          <div class="timer-subtitle">Vale 1 Livro de Colorir!</div>
+        </div>
+
+        <div id="info-panel" class="panel">
+          <div class="info-header">
+              <h2 class="info-title">
+                Siga no Instagram para concorrer:
+                <span class="highlight">@letrinhalivros</span>
+              </h2>
+          </div>
+
+          <div class="info-content-area">
+              <div id="qr-container">
+                  <img src="images/qrcode.png" alt="QR Code Instagram Letrinha">
+              </div>
+
+              <div id="mascote-container">
+                  <img id="mascote-img" src="images/insta.png" alt="Mascote Letrinha">
+              </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      const setVh = () => {
+        document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
+      };
+      window.addEventListener("resize", setVh);
+      window.addEventListener("orientationchange", () => { setTimeout(setVh, 100); });
+      setVh();
+
+      // 1 hora e 30 minutos = 90 minutos * 60 segundos = 5400 segundos
+      const DURATION = 90 * 60; 
+      let timeLeft = DURATION;
+      const timerDisplay = document.getElementById('timer-display');
+      let timerInterval;
+
+      function updateTimer() {
+        // Cálculo de horas, minutos e segundos
+        const hours = Math.floor(timeLeft / 3600);
+        const minutes = Math.floor((timeLeft % 3600) / 60);
+        const seconds = timeLeft % 60;
+
+        // Formatação HH:MM:SS
+        const formattedTime = 
+          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        timerDisplay.textContent = formattedTime;
+
+        // Alerta visual (vermelho) quando faltar menos de 1 minuto (60s)
+        if (timeLeft <= 60) {
+            timerDisplay.style.color = 'var(--rosa)';
+        } else {
+            timerDisplay.style.color = 'var(--branco)';
+        }
+
+        if (timeLeft === 0) {
+          clearInterval(timerInterval);
+          // Espera 2 segundos no 00:00:00 antes de reiniciar
+          setTimeout(() => {
+              timeLeft = DURATION;
+              startTimer();
+          }, 2000);
+        } else {
+          timeLeft--;
+        }
+      }
+
+      function startTimer() {
+          updateTimer();
+          timerInterval = setInterval(updateTimer, 1000);
+      }
+
+      startTimer();
+    </script>
+  </body>
+</html>
